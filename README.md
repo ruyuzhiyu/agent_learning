@@ -58,7 +58,12 @@ cp .env.example .env
 # 编辑.env文件，填入你的API密钥
 ```
 
-### 4. 运行示例代码
+### 4. 测试环境
+```bash
+python test_setup.py
+```
+
+### 5. 运行示例代码
 ```bash
 # Day 2示例：大模型基础
 python examples/day02_llm_basics.py
@@ -69,15 +74,21 @@ python examples/day03_langchain_intro.py
 # 其他示例...
 ```
 
+**详细的环境搭建指南请查看：[快速开始.md](./快速开始.md)**
+
 ## 📁 项目结构
 
 ```
 agent_learning/
 ├── 学习计划.md          # 详细的14天学习计划
+├── 快速开始.md          # 环境搭建指南
+├── 学习笔记模板.md      # 学习笔记模板
 ├── RESOURCES.md         # 学习资源汇总
 ├── README.md            # 项目说明
 ├── requirements.txt     # Python依赖
 ├── .env.example         # 环境变量示例
+├── .gitignore          # Git忽略文件
+├── test_setup.py        # 环境测试脚本
 ├── examples/            # 每日代码示例
 │   ├── day02_llm_basics.py
 │   ├── day03_langchain_intro.py
@@ -87,6 +98,9 @@ agent_learning/
 │   └── ...
 └── projects/            # 实战项目
     ├── week1_personal_assistant/
+    │   ├── main.py
+    │   ├── README.md
+    │   └── tools/
     └── industry_cases/
 ```
 

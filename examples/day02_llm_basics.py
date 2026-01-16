@@ -5,53 +5,12 @@ Day 2: 大模型基础示例代码
 
 import os
 from openai import OpenAI
-import ast
-import operator
 
 # 初始化客户端（需要设置环境变量 OPENAI_API_KEY）
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-# 支持的安全操作符
-_operators = {
-    ast.Add: operator.add,
-    ast.Sub: operator.sub,
-    ast.Mult: operator.mul,
-    ast.Div: operator.truediv,
-    ast.Pow: operator.pow,
-    ast.USub: operator.neg,
-}
-
-
-def _safe_eval(node):
-    """安全地评估数学表达式"""
-    if isinstance(node, ast.Num):  # 数字
-        return node.n
-    elif isinstance(node, ast.BinOp):  # 二元运算符
-        op = _operators.get(type(node.op))
-        if op is None:
-            raise ValueError(f"不支持的操作符: {type(node.op).__name__}")
-        return op(_safe_eval(node.left), _safe_eval(node.right))
-    elif isinstance(node, ast.UnaryOp):  # 一元运算符
-        op = _operators.get(type(node.op))
-        if op is None:
-            raise ValueError(f"不支持的操作符: {type(node.op).__name__}")
-        return op(_safe_eval(node.operand))
-    else:
-        raise ValueError(f"不支持的节点类型: {type(node).__name__}")
-
-
-def calculator(expression: str) -> str:
-    """
-    计算器工具：计算数学表达式（使用安全的AST解析）
-    """
-    try:
-        # 使用AST安全解析和执行
-        tree = ast.parse(expression, mode='eval')
-        result = _safe_eval(tree.body)
-        return f"计算结果: {result}"
-    except Exception as e:
-        return f"计算错误: {str(e)}"
+def basic_completion(prompt: str, temperature: float = 0.7):
     """
     基础的LLM调用示例
     

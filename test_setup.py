@@ -28,15 +28,15 @@ def test_dependencies():
     print("测试2: 依赖包")
     print("="*60)
     
-    required_packages = {
-        'langchain': '0.1.0',
-        'openai': '1.0.0',
-        'pydantic': '2.0.0',
-    }
+    required_packages = [
+        'langchain',
+        'openai',
+        'pydantic',
+    ]
     
     all_ok = True
     
-    for package, min_version in required_packages.items():
+    for package in required_packages:
         try:
             module = __import__(package)
             version = getattr(module, '__version__', 'unknown')

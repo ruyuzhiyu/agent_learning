@@ -3,6 +3,8 @@
 """
 
 from langchain.tools import BaseTool
+import ast
+import operator
 
 
 class CalculatorTool(BaseTool):
@@ -12,6 +14,33 @@ class CalculatorTool(BaseTool):
     """
     name = "calculator"
     description = "计算器工具，用于执行数学计算。输入数学表达式，返回计算结果。例如：2+2, 10*5, 100/4"
+    
+    # 支持的安全操作符
+    _operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,
+    }
+    
+    def _safe_eval(self, node):
+        """安全地评估数学表达式"""
+        if isinstance(node, ast.Num):  # 数字
+            return node.n
+        elif isinstance(node, ast.BinOp):  # 二元运算符
+            op = self._operators.get(type(node.op))
+            if op is None:
+                raise ValueError(f"不支持的操作符: {type(node.op).__name__}")
+            return op(self._safe_eval(node.left), self._safe_eval(node.right))
+        elif isinstance(node, ast.UnaryOp):  # 一元运算符
+            op = self._operators.get(type(node.op))
+            if op is None:
+                raise ValueError(f"不支持的操作符: {type(node.op).__name__}")
+            return op(self._safe_eval(node.operand))
+        else:
+            raise ValueError(f"不支持的节点类型: {type(node).__name__}")
     
     def _run(self, expression: str) -> str:
         """执行计算"""
@@ -24,8 +53,9 @@ class CalculatorTool(BaseTool):
             if not all(c in allowed_chars for c in expression):
                 return "错误：表达式包含不允许的字符。只支持数字和 +-*/() 运算符。"
             
-            # 执行计算
-            result = eval(expression)
+            # 使用AST安全解析和执行
+            tree = ast.parse(expression, mode='eval')
+            result = self._safe_eval(tree.body)
             
             # 格式化结果
             if isinstance(result, float):

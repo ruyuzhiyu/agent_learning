@@ -20,10 +20,43 @@ llm = ChatOpenAI(
 
 # ========== 准备工具 ==========
 
+import ast
+import operator
+
+# 支持的安全操作符
+_calc_operators = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+}
+
+
+def _safe_eval_expr(node):
+    """安全地评估数学表达式"""
+    if isinstance(node, ast.Num):
+        return node.n
+    elif isinstance(node, ast.BinOp):
+        op = _calc_operators.get(type(node.op))
+        if op is None:
+            raise ValueError("不支持的操作符")
+        return op(_safe_eval_expr(node.left), _safe_eval_expr(node.right))
+    elif isinstance(node, ast.UnaryOp):
+        op = _calc_operators.get(type(node.op))
+        if op is None:
+            raise ValueError("不支持的操作符")
+        return op(_safe_eval_expr(node.operand))
+    else:
+        raise ValueError("不支持的节点类型")
+
+
 def calculator(expression: str) -> str:
-    """计算器工具"""
+    """计算器工具（使用安全的AST解析）"""
     try:
-        result = eval(expression)
+        tree = ast.parse(expression, mode='eval')
+        result = _safe_eval_expr(tree.body)
         return str(result)
     except Exception as e:
         return f"Error: {str(e)}"

@@ -24,12 +24,45 @@ llm = ChatOpenAI(
 
 # ========== 基础工具示例 ==========
 
+# 支持的安全操作符
+import ast
+import operator
+
+_calc_operators = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+}
+
+
+def _safe_eval_expr(node):
+    """安全地评估数学表达式"""
+    if isinstance(node, ast.Num):
+        return node.n
+    elif isinstance(node, ast.BinOp):
+        op = _calc_operators.get(type(node.op))
+        if op is None:
+            raise ValueError(f"不支持的操作符")
+        return op(_safe_eval_expr(node.left), _safe_eval_expr(node.right))
+    elif isinstance(node, ast.UnaryOp):
+        op = _calc_operators.get(type(node.op))
+        if op is None:
+            raise ValueError(f"不支持的操作符")
+        return op(_safe_eval_expr(node.operand))
+    else:
+        raise ValueError(f"不支持的节点类型")
+
+
 def calculator(expression: str) -> str:
     """
-    计算器工具：计算数学表达式
+    计算器工具：计算数学表达式（使用安全的AST解析）
     """
     try:
-        result = eval(expression)
+        tree = ast.parse(expression, mode='eval')
+        result = _safe_eval_expr(tree.body)
         return f"计算结果: {result}"
     except Exception as e:
         return f"计算错误: {str(e)}"
@@ -90,20 +123,22 @@ class WeatherTool(BaseTool):
 
 class CodeExecutor(BaseTool):
     """
-    代码执行工具（安全起见，这里只是模拟）
+    代码执行工具（仅用于教学演示，实际使用需要沙箱环境）
     """
     name = "code_executor"
-    description = "执行Python代码并返回结果。仅支持简单的计算和字符串操作。"
+    description = "执行简单的Python数学表达式并返回结果。仅支持基本的数学运算。"
     
     def _run(self, code: str) -> str:
         """执行代码"""
         try:
             # 安全起见，实际使用应该有沙箱环境
-            # 这里只允许简单的表达式
+            # 这里只允许简单的数学表达式
             if any(keyword in code for keyword in ['import', 'exec', 'eval', 'open', '__']):
                 return "代码包含不允许的操作"
             
-            result = eval(code)
+            # 使用AST安全解析（仅支持数学表达式）
+            tree = ast.parse(code, mode='eval')
+            result = _safe_eval_expr(tree.body)
             return f"执行结果: {result}"
         except Exception as e:
             return f"执行错误: {str(e)}"

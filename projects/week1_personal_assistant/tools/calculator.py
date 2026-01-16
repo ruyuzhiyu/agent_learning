@@ -27,8 +27,9 @@ class CalculatorTool(BaseTool):
     
     def _safe_eval(self, node):
         """安全地评估数学表达式"""
-        if isinstance(node, ast.Num):  # 数字
-            return node.n
+        if isinstance(node, (ast.Num, ast.Constant)):  # 数字（兼容Python 3.8+）
+            # ast.Constant用于Python 3.8+，ast.Num用于旧版本
+            return node.n if isinstance(node, ast.Num) else node.value
         elif isinstance(node, ast.BinOp):  # 二元运算符
             op = self._operators.get(type(node.op))
             if op is None:

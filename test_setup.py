@@ -28,6 +28,8 @@ def test_dependencies():
     print("测试2: 依赖包")
     print("="*60)
     
+    import importlib
+    
     required_packages = [
         'langchain',
         'openai',
@@ -38,7 +40,7 @@ def test_dependencies():
     
     for package in required_packages:
         try:
-            module = __import__(package)
+            module = importlib.import_module(package)
             version = getattr(module, '__version__', 'unknown')
             print(f"✓ {package}: {version}")
         except ImportError:

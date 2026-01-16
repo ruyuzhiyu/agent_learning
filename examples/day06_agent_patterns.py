@@ -36,8 +36,8 @@ _calc_operators = {
 
 def _safe_eval_expr(node):
     """安全地评估数学表达式"""
-    if isinstance(node, ast.Num):
-        return node.n
+    if isinstance(node, (ast.Num, ast.Constant)):  # 数字（兼容Python 3.8+）
+        return node.n if isinstance(node, ast.Num) else node.value
     elif isinstance(node, ast.BinOp):
         op = _calc_operators.get(type(node.op))
         if op is None:
